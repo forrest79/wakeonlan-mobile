@@ -1,8 +1,8 @@
-Wake on LAN - Mobile © Jakub Trmota, 2012 (http://forrest79.net)
+WakeOnLan - Mobile © Jakub Trmota, 2012 (http://forrest79.net)
 
 LICENSE
 =======
-Wake on LAN - Mobile is distributed under GPL license. See license.txt.
+WakeOnLan - Mobile is distributed under GPL license. See license.txt.
 
 
 INTRODUCTION
