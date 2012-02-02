@@ -1,192 +1,171 @@
-/*
-	Class
-	Settings - 1.0.0 - 10.5.2007
-	Jakub Trmota, jakub.trmota@forrest79.net
-*/
-import javax.microedition.lcdui.*;
-import javax.microedition.rms.*;
-import java.util.Vector;
+package wakeonlan;
 
-public class Settings {
+import javax.microedition.rms.RecordStore;
+import javax.microedition.rms.RecordStoreException;
+import javax.microedition.rms.RecordStoreNotOpenException;
+import wakeonlan.locale.Locale;
 
-	private WakeOnMobile midlet = null;
+/**
+ * Locale class.
+ *
+ * @author Jakub Trmota | Forrest79
+ */
+public final class Settings {
+	/**
+	 * Record lang id.
+	 */
+	private static final int LANG_RECORD_ID = 1;
 
-	private RecordStore settings = null;
+	/**
+	 * Record password id.
+	 */
+	private static final int PASSWORD_RECORD_ID = 2;
 
-	private static final int PASSWORD = 1;
-	private static final int COMPUTERS = 2;
+	/**
+	 * WakeOnLan midlet.
+	 */
+	private WakeOnLan wakeOnLan = null;
 
-	public String settPassword = "";
-	public Vector settDBIndex = null;
-	public Vector settName = null;
-	public Vector settIP = null;
-	public Vector settMAC = null;
-	public Vector settPort = null;
+	/**
+	 * Records.
+	 */
+	private RecordStore records = null;
 
-	public Settings(WakeOnMobile midlet) {
-		this.midlet = midlet;
-	}
+	/**
+	 * Actual locale id.
+	 */
+	private String localeId = "";
 
-	public void openDBSettings() {
-		try {
-			settings = RecordStore.openRecordStore("settings", true);
-		} catch(Exception e) {}
-	}
+	/**
+	 * Actual password.
+	 */
+	private String password = "";
 
-	public void closeDBSettings() throws RecordStoreNotOpenException, RecordStoreException {
-		try {
-			settings.closeRecordStore();
-		} catch(Exception e) {}
-	}
+	/**
+	 * Indicate first run of application.
+	 */
+	private boolean firstRun = false;
 
-	public void loadSettings() {
-		settPassword = "";
-		settDBIndex = new Vector();
-		settName = new Vector();
-		settIP = new Vector();
-		settMAC = new Vector();
-		settPort = new Vector();
+	/**
+	 * Initialize locale class and load locale id.
+	 *
+	 * @param wakeOnLan
+	 * @throws RecordStoreException
+	 */
+	public Settings(WakeOnLan wakeOnLan) throws RecordStoreException {
+		this.wakeOnLan = wakeOnLan;
 
-		try {
-			if(settings.getNumRecords() == 0) {
-				String passwordValue;
-				byte[] byteSettingsValue = null;
+		openRecords();
 
-				int new_settings;
+		if (records.getNumRecords() == 0) {
+			firstRun = true;
 
-				passwordValue = "";
-				byteSettingsValue = passwordValue.getBytes();
-				new_settings = settings.addRecord(byteSettingsValue, 0, byteSettingsValue.length); // BLANK PASSWORD
-			}
-
-			byte[] settRecord = null;
-
-			settRecord = new byte[settings.getRecordSize(PASSWORD)];
-			settings.getRecord(PASSWORD, settRecord, 0);
-			settPassword = new String(settRecord);
-
-			if(settings.getNumRecords() > 1) {
-				for(int i = COMPUTERS; i <= settings.getNumRecords(); i++) {
-					if(settings.getRecordSize(i) > 0) {
-						settDBIndex.addElement(new Integer(i));
-
-						settRecord = new byte[settings.getRecordSize(i)];
-						settings.getRecord(i, settRecord, 0);
-						settName.addElement(new String(settRecord));
-
-						settRecord = new byte[settings.getRecordSize(i + 1)];
-						settings.getRecord((i + 1), settRecord, 0);
-						settIP.addElement(new String(settRecord));
-
-						settRecord = new byte[settings.getRecordSize(i + 2)];
-						settings.getRecord((i + 2), settRecord, 0);
-						settMAC.addElement(new String(settRecord));
-
-						settRecord = new byte[settings.getRecordSize(i + 3)];
-						settings.getRecord((i + 3), settRecord, 0);
-						settPort.addElement(new String(settRecord));
-					}
-					i = i + 3;
-				}
-			}
-		} catch(Exception e) {System.out.println(e);}
-	}
-
-	public String saveComputer(String name, String ip, String mac, String port, int computer) {
-		if(name.compareTo("") == 0)
-			return midlet.Texts.BLANK_NAME;
-		else if(ip.compareTo("") == 0)
-			return midlet.Texts.BLANK_IP;
-		else if(mac.compareTo("") == 0)
-			return midlet.Texts.BLANK_MAC;
-		else if(port.compareTo("") == 0)
-			return midlet.Texts.BLANK_PORT;
-
-		try {
-			byte[] byteSettingsValue = null;
-
-			if(computer == -1) {
-				int newDBIndex = 0;
-
-				byteSettingsValue = name.getBytes();
-				newDBIndex = settings.addRecord(byteSettingsValue, 0, byteSettingsValue.length);
-
-				byteSettingsValue = ip.getBytes();
-				settings.addRecord(byteSettingsValue, 0, byteSettingsValue.length);
-
-				byteSettingsValue = mac.getBytes();
-				settings.addRecord(byteSettingsValue, 0, byteSettingsValue.length);
-
-				byteSettingsValue = port.getBytes();
-				settings.addRecord(byteSettingsValue, 0, byteSettingsValue.length);
-
-				settDBIndex.addElement(new Integer(newDBIndex));
-				settName.addElement(name);
-				settIP.addElement(ip);
-				settMAC.addElement(mac);
-				settPort.addElement(port);
-				midlet.lstMain.append(name, null);
+			// Set locale
+			if (System.getProperty("microedition.locale").startsWith("cs")) {
+				records.addRecord(Locale.CS.getBytes(), 0, Locale.CS.getBytes().length);
 			} else {
-				int dbIndex = ((Integer) settDBIndex.elementAt(computer)).intValue();
-
-				byteSettingsValue = name.getBytes();
-				settings.setRecord(dbIndex, byteSettingsValue, 0, byteSettingsValue.length);
-
-				byteSettingsValue = ip.getBytes();
-				settings.setRecord((dbIndex + 1), byteSettingsValue, 0, byteSettingsValue.length);
-
-				byteSettingsValue = mac.getBytes();
-				settings.setRecord((dbIndex + 2), byteSettingsValue, 0, byteSettingsValue.length);
-
-				byteSettingsValue = port.getBytes();
-				settings.setRecord((dbIndex + 3), byteSettingsValue, 0, byteSettingsValue.length);
-
-				settName.setElementAt(name, computer);
-				settIP.setElementAt(ip, computer);
-				settMAC.setElementAt(mac, computer);
-				settPort.setElementAt(port, computer);
-				midlet.lstMain.set((computer + 1), name, null);
+				records.addRecord(Locale.EN.getBytes(), 0, Locale.EN.getBytes().length);
 			}
-		} catch(Exception e) {
-			return midlet.Texts.SAVE_ERROR;
+
+			// Set password
+			records.addRecord(password.getBytes(), 0, password.length());
 		}
 
-		return "";
+		// Load settings
+		byte[] byteLocaleId = new byte[records.getRecordSize(LANG_RECORD_ID)];
+		records.getRecord(LANG_RECORD_ID, byteLocaleId, 0);
+
+		localeId = new String(byteLocaleId);
+
+		byte[] bytePassword = new byte[records.getRecordSize(LANG_RECORD_ID)];
+		records.getRecord(LANG_RECORD_ID, bytePassword, 0);
+
+		password = new String(bytePassword);
 	}
 
-	public void removeComputer(int computer) {
-		try {
-			int dbIndex = ((Integer) settDBIndex.elementAt(computer)).intValue();
-
-			settings.setRecord(dbIndex, null, 0, 0);
-			settings.setRecord((dbIndex + 1), null, 0, 0);
-			settings.setRecord((dbIndex + 2), null, 0, 0);
-			settings.setRecord((dbIndex + 3), null, 0, 0);
-
-			settDBIndex.removeElementAt(computer);
-			settName.removeElementAt(computer);
-			settIP.removeElementAt(computer);
-			settMAC.removeElementAt(computer);
-			settPort.removeElementAt(computer);
-			midlet.lstMain.delete(computer + 1);
-		} catch(Exception e) {}
-	}
-
-	public String savePassword(String password1, String password2) {
-		if(password1.compareTo(password2) != 0)
-			return midlet.Texts.NOT_EQUAL_PASSWORD;
-
-		try {
-			byte[] byteSettingsValue = null;
-
-			byteSettingsValue = password1.getBytes();
-			settings.setRecord(PASSWORD, byteSettingsValue, 0, byteSettingsValue.length);
-
-			settPassword = password1;
-		} catch(Exception e) {
-			return midlet.Texts.SAVE_ERROR;
+	/**
+	 * Set locale id.
+	 *
+	 * @param localeId
+	 * @return true if locale is changed
+	 */
+	public boolean setLocaleId(String localeId) throws RecordStoreException {
+		if (this.localeId.equals(localeId)) {
+			return false;
 		}
 
-		return "";
+		this.localeId = localeId;
+
+		records.setRecord(LANG_RECORD_ID, this.localeId.getBytes(), 0, this.localeId.getBytes().length);
+
+		return true;
+	}
+
+	/**
+	 * Get locale id.
+	 *
+	 * @return locale id
+	 */
+	public String getLocaleId() {
+		return localeId;
+	}
+
+	/**
+	 * Set password.
+	 *
+	 * @param password
+	 * @return true if locale is changed
+	 */
+	public boolean setPassword(String password1, String password2) throws Exception, RecordStoreException {
+		if (!password1.equals(password2)) {
+			throw new Exception(wakeOnLan.translate("Hesla se musí shodovat."));
+		}
+
+		if (this.password.equals(password)) {
+			return false;
+		}
+
+		this.password = password1;
+
+		records.setRecord(PASSWORD_RECORD_ID, this.password.getBytes(), 0, this.password.getBytes().length);
+
+		return true;
+	}
+
+	/**
+	 * Get password.
+	 *
+	 * @return password
+	 */
+	public String getPassword() {
+		return password;
+	}
+
+	/**
+	 * Indicate first run of application.
+	 *
+	 * @return
+	 */
+	public boolean firstRun() {
+		return firstRun;
+	}
+
+	/**
+	 * Open records.
+	 *
+	 * @throws RecordStoreException
+	 */
+	public void openRecords() throws RecordStoreException {
+		records = RecordStore.openRecordStore("settings", true);
+	}
+
+	/**
+	 * Close records.
+	 *
+	 * @throws RecordStoreNotOpenException
+	 * @throws RecordStoreException
+	 */
+	public void closeRecords() throws RecordStoreNotOpenException, RecordStoreException {
+		records.closeRecordStore();
 	}
 }
