@@ -6,7 +6,7 @@ import javax.microedition.rms.RecordStoreNotOpenException;
 import wakeonlan.locale.Locale;
 
 /**
- * Locale class.
+ * Settings class.
  *
  * @author Jakub Trmota | Forrest79
  */

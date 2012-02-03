@@ -61,8 +61,8 @@ public final class FormSetPassword extends Form implements CommandListener {
 		txtPassword1 = new TextField(wakeOnLan.translate("Heslo") + ":", "", 20, TextField.PASSWORD);
 		txtPassword2 = new TextField(wakeOnLan.translate("Heslo znovu") + ":", "", 20, TextField.PASSWORD);
 		strInfo = new StringItem("", wakeOnLan.translate("Nechce prázdné pro deaktivování ochrany heslem."));
-		cmdSave = new Command(wakeOnLan.translate("Uložit"), Command.SCREEN, 0);
-		cmdBack = new Command(wakeOnLan.translate("Zpět"), Command.SCREEN, 1);
+		cmdSave = new Command(wakeOnLan.translate("Uložit"), Command.OK, 0);
+		cmdBack = new Command(wakeOnLan.translate("Zpět"), Command.BACK, 1);
 
 		append(txtPassword1);
 		append(txtPassword2);

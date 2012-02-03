@@ -49,8 +49,8 @@ public final class FormCheckPassword extends Form implements CommandListener {
 		setTitle(wakeOnLan.translate("Zkontrolovat heslo"));
 
 		txtPassword = new TextField(wakeOnLan.translate("Heslo") + ":", "", 20, TextField.PASSWORD);
-		cmdCheck = new Command(wakeOnLan.translate("Zkontrolovat"), Command.SCREEN, 0);
-		cmdExit = new Command(wakeOnLan.translate("Konec"), Command.SCREEN, 1);
+		cmdCheck = new Command(wakeOnLan.translate("Zkontrolovat"), Command.OK, 0);
+		cmdExit = new Command(wakeOnLan.translate("Konec"), Command.BACK, 1);
 
 		append(txtPassword);
 

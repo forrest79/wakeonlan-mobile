@@ -75,14 +75,14 @@ public final class ListComputers extends List implements CommandListener {
 	public void initialize() {
 		setTitle(wakeOnLan.translate("Probudit počítač"));
 
-		cmdWake = new Command(wakeOnLan.translate("Probuď"), Command.SCREEN, 0);
+		cmdWake = new Command(wakeOnLan.translate("Probuď"), Command.OK, 0);
 		cmdAdd = new Command(wakeOnLan.translate("Přidat počítač"), Command.SCREEN, 1);
 		cmdModify = new Command(wakeOnLan.translate("Upravit počítač"), Command.SCREEN, 2);
 		cmdRemove = new Command(wakeOnLan.translate("Vymazat počítač"), Command.SCREEN, 3);
 		cmdSetPassword = new Command(wakeOnLan.translate("Nastavit heslo"), Command.SCREEN, 4);
 		cmdLang = new Command(wakeOnLan.translate("Nastavit jazyk"), Command.SCREEN, 5);
 		cmdAbout = new Command(wakeOnLan.translate("O WakeOnLan"), Command.SCREEN, 6);
-		cmdExit = new Command(wakeOnLan.translate("Konec"), Command.SCREEN, 7);
+		cmdExit = new Command(wakeOnLan.translate("Konec"), Command.BACK, 7);
 
 		addCommand(cmdWake);
 		addCommand(cmdAdd);
@@ -131,15 +131,17 @@ public final class ListComputers extends List implements CommandListener {
 			if (getSelectedIndex() == 0) {
 				wakeOnLan.showQuickWakeComputer();
 			} else if (getSelectedIndex() > 0) {
-				// WAKE COMPUTER
+				wakeOnLan.wakeComputer(getSelectedIndex());
 			}
 		} else if (c == cmdAdd) {
 			wakeOnLan.showAddComputer();
 		} else if (c == cmdModify) {
-			wakeOnLan.showModifyComputer();
+			if (getSelectedIndex() > 0) {
+				wakeOnLan.showModifyComputer(getSelectedIndex());
+			}
 		} else if (c == cmdRemove) {
 			if (getSelectedIndex() > 0) {
-				// REMOVE COMPUTER
+				wakeOnLan.showRemoveComputer(getSelectedIndex());
 			}
 		} else if (c == cmdSetPassword) {
 			wakeOnLan.showSetPassword();

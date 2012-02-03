@@ -1,19 +1,29 @@
 package wakeonlan.display;
 
 import java.io.IOException;
-import javax.microedition.lcdui.Canvas;
-import javax.microedition.lcdui.Command;
-import javax.microedition.lcdui.Font;
-import javax.microedition.lcdui.Graphics;
+import javax.microedition.lcdui.*;
 import wakeonlan.WakeOnLan;
 import wakeonlan.animation.Working;
 
-public class CanvasResult extends Canvas {
-
+/**
+ * Result canvas.
+ *
+ * @author Jakub Trmota | Forrest79
+ */
+public class CanvasResult extends Canvas implements CommandListener {
+	/**
+	 * Working status.
+	 */
 	private static final short STATUS_WORKING = 0;
 
+	/**
+	 * Done status.
+	 */
 	private static final short STATUS_DONE = 1;
-	
+
+	/**
+	 * Error status.
+	 */
 	private static final short STATUS_ERROR = 2;
 
 	/**
@@ -21,8 +31,19 @@ public class CanvasResult extends Canvas {
 	 */
 	private WakeOnLan wakeOnLan = null;
 
+	/**
+	 * Computer name.
+	 */
 	private String name = "";
 
+	/**
+	 * Error text.
+	 */
+	private String error = "";
+
+	/**
+	 * Actual status.
+	 */
 	private short status = STATUS_WORKING;
 
 	/**
@@ -40,19 +61,28 @@ public class CanvasResult extends Canvas {
 	 */
 	private Command cmdExit = null;
 
+	/**
+	 * Initialize canvas result.
+	 *
+	 * @param wakeOnLan
+	 * @throws IOException
+	 */
 	public CanvasResult(WakeOnLan wakeOnLan) throws IOException {
 		this.wakeOnLan = wakeOnLan;
 
-		this.working = new Working(this, (getWidth() - Working.WIDTH) / 2, (getHeight() + Working.HEIGHT) / 2);
+		initialize();
+
+		this.working = new Working(this, (getWidth() - Working.WIDTH) / 2, getHeight() - Working.HEIGHT - 50);
 	}
 
 	/**
 	 * Initialize components.
 	 */
-	public void initialize() {
-		cmdOk = new Command(wakeOnLan.translate("Ok"), Command.SCREEN, 0);
-		cmdExit = new Command(wakeOnLan.translate("Konec"), Command.SCREEN, 2);
+	private void initialize() {
+		cmdOk = new Command(wakeOnLan.translate("Ok"), Command.OK, 0);
+		cmdExit = new Command(wakeOnLan.translate("Konec"), Command.BACK, 1);
 
+		addCommand(cmdOk);
 		addCommand(cmdExit);
 	}
 
@@ -66,6 +96,11 @@ public class CanvasResult extends Canvas {
 		initialize();
 	}
 
+	/**
+	 * Paint with working animation.
+	 *
+	 * @param g
+	 */
 	protected void paint(Graphics g) {
 		g.setColor(197, 1, 1);
 		g.fillRect(0, 0, getWidth(), getHeight());
@@ -79,47 +114,80 @@ public class CanvasResult extends Canvas {
 		}
 	}
 
+	/**
+	 * Paint sending to computer text.
+	 *
+	 * @param g
+	 */
 	private void paintSending(Graphics g) {
 		g.setColor(255, 255, 255);
 
 		g.setFont(Font.getFont(Font.FACE_PROPORTIONAL, Font.STYLE_BOLD, Font.SIZE_SMALL));
 
-		g.drawString(wakeOnLan.translate("Probouzím počítač") + " " + name, (getWidth() / 2), 25, g.HCENTER | g.TOP);
-		//g.drawString(name + "...", (getWidth() / 2), 37, g.HCENTER | g.TOP);
+		g.drawString(wakeOnLan.translate("Probouzím počítač") + " " + name, getWidth() / 2, 25, Graphics.HCENTER | Graphics.TOP);
 	}
 
+	/**
+	 * Paint status - done or error text.
+	 * @param g
+	 */
 	private void paintStatus(Graphics g) {
 		g.setFont(Font.getFont(Font.FACE_PROPORTIONAL, Font.STYLE_BOLD, Font.SIZE_MEDIUM));
 
 		if(status == STATUS_DONE) {
 			g.setColor(255, 255, 255);
-			g.drawString(wakeOnLan.translate("Magic paket\nbyl úspěšně\nodeslán!"), (getWidth() / 2), 55, g.HCENTER | g.TOP);
-			//g.drawString(midlet.Texts.SEND_SUCCESSFULY_2, (getWidth() / 2), 67, g.HCENTER | g.TOP);
-			//g.drawString(midlet.Texts.SEND_SUCCESSFULY_3, (getWidth() / 2), 79, g.HCENTER | g.TOP);
+			g.drawString(wakeOnLan.translate("Požadavek odeslán!"), getWidth() / 2, 55, Graphics.HCENTER | Graphics.TOP);
 		} else if(status == STATUS_ERROR) {
-			g.setColor(255, 0, 0);
-			g.drawString(wakeOnLan.translate("Nastala chyba při odesílání magic paketu."), (getWidth() / 2), 55, g.HCENTER | g.TOP);
-			//g.drawString(midlet.Texts.SEND_ERROR_2, (getWidth() / 2), 67, g.HCENTER | g.TOP);
+			g.setColor(200, 200, 200);
+			g.drawString(wakeOnLan.translate("Chyba") + ": " + this.error + ".", getWidth() / 2, 55, Graphics.HCENTER | Graphics.TOP);
 		}
 	}
 
+	/**
+	 * Start result.
+	 *
+	 * @param name
+	 */
 	public void wakeComputer(String name) {
 		status = STATUS_WORKING;
 		this.name = name;
+		this.error = "";
 		working.restart();
+		repaint();
 	}
 
+	/**
+	 * Successfully done.
+	 */
 	public void done() {
 		status = STATUS_DONE;
 		working.stop();
+		repaint();
 	}
 
-	public void error() {
+	/**
+	 * An error occured.
+	 *
+	 * @param error
+	 */
+	public void error(String error) {
 		status = STATUS_ERROR;
+		this.error = error;
 		working.stop();
+		repaint();
 	}
 
-	public void stop() {
-		working.stop();
+	/**
+	 * Action listener.
+	 *
+	 * @param c
+	 * @param d
+	 */
+	public void commandAction(Command c, Displayable d) {
+		if (c == cmdOk) {
+			wakeOnLan.showComputers();
+		} else if (c == cmdExit) {
+			wakeOnLan.exit();
+		}
 	}
 }

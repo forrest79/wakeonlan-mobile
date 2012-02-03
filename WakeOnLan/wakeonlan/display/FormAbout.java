@@ -4,7 +4,7 @@ import javax.microedition.lcdui.*;
 import wakeonlan.WakeOnLan;
 
 /**
- * Form about dictionary.
+ * Form about wake on lan.
  *
  * @author Jakub Trmota | Forrest79
  */
@@ -44,7 +44,7 @@ public final class FormAbout extends Form implements CommandListener {
 		setTitle(wakeOnLan.translate("O WakeOnLan"));
 
 		strAbout = new StringItem(wakeOnLan.translate("Verze WakeOnLan") + ": " + WakeOnLan.VERSION + "\n", wakeOnLan.translate("O WakeOnLan: text"));
-		cmdBack = new Command(wakeOnLan.translate("Zpět"), Command.SCREEN, 0);
+		cmdBack = new Command(wakeOnLan.translate("Zpět"), Command.OK, 0);
 
 		append(strAbout);
 		addCommand(cmdBack);

@@ -55,6 +55,11 @@ public final class FormComputer extends Form implements CommandListener {
 	private TextField txtPort = null;
 
 	/**
+	 * Command wake.
+	 */
+	private Command cmdWake = null;
+
+	/**
 	 * Command add.
 	 */
 	private Command cmdAdd = null;
@@ -63,11 +68,6 @@ public final class FormComputer extends Form implements CommandListener {
 	 * Command save.
 	 */
 	private Command cmdSave = null;
-
-	/**
-	 * Command wake.
-	 */
-	private Command cmdWake = null;
 
 	/**
 	 * Command back.
@@ -101,10 +101,10 @@ public final class FormComputer extends Form implements CommandListener {
 		txtMac = new TextField(wakeOnLan.translate("MAC adresa") + ":", "", 20, TextField.ANY);
 		strMacInfo = new StringItem("", wakeOnLan.translate("MAC: Info"));
 		txtPort = new TextField(wakeOnLan.translate("Port") + ":", "", 4, TextField.NUMERIC);
-		cmdWake = new Command(wakeOnLan.translate("Probudit počítač"), Command.SCREEN, 0);
-		cmdAdd = new Command(wakeOnLan.translate("Přidat počítač"), Command.SCREEN, 0);
-		cmdSave = new Command(wakeOnLan.translate("Uložit počítač"), Command.SCREEN, 0);
-		cmdBack = new Command(wakeOnLan.translate("Zpět"), Command.SCREEN, 1);
+		cmdWake = new Command(wakeOnLan.translate("Probudit počítač"), Command.OK, 0);
+		cmdAdd = new Command(wakeOnLan.translate("Přidat počítač"), Command.OK, 0);
+		cmdSave = new Command(wakeOnLan.translate("Uložit počítač"), Command.OK, 0);
+		cmdBack = new Command(wakeOnLan.translate("Zpět"), Command.BACK, 1);
 		cmdExit = new Command(wakeOnLan.translate("Konec"), Command.SCREEN, 2);
 	}
 
@@ -182,10 +182,12 @@ public final class FormComputer extends Form implements CommandListener {
 		if (c == cmdExit) {
 			wakeOnLan.exit();
 		} else if (c == cmdBack) {
-			wakeOnLan.back();
-		} else if (c == cmdAdd) {
-		} else if (c == cmdSave) {
+			wakeOnLan.showComputers();
 		} else if (c == cmdWake) {
+			wakeOnLan.wakeComputer(txtIp.getString(), txtMac.getString(), txtPort.getString());
+		} else if (c == cmdAdd) {
+			wakeOnLan.addComputer(txtName.getString(), txtIp.getString(), txtMac.getString(), txtPort.getString());
+		} else if (c == cmdSave) {
 		}
 	}
 }

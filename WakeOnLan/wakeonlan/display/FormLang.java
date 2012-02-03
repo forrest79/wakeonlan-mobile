@@ -52,8 +52,8 @@ public final class FormLang extends Form implements CommandListener {
 		chgLang = new ChoiceGroup(wakeOnLan.translate("Jazyk") + ":", Choice.EXCLUSIVE);
 		chgLang.append(wakeOnLan.translate("česky"), null);
 		chgLang.append(wakeOnLan.translate("anglicky"), null);
-		cmdSave = new Command(wakeOnLan.translate("Uložit"), Command.SCREEN, 0);
-		cmdBack = new Command(wakeOnLan.translate("Zpět"), Command.SCREEN, 1);
+		cmdSave = new Command(wakeOnLan.translate("Uložit"), Command.OK, 0);
+		cmdBack = new Command(wakeOnLan.translate("Zpět"), Command.BACK, 1);
 
 		append(chgLang);
 

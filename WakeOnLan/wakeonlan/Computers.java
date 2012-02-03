@@ -1,10 +1,10 @@
 package wakeonlan;
 
 import java.util.Vector;
-import javax.microedition.lcdui.List;
 import javax.microedition.rms.RecordStore;
 import javax.microedition.rms.RecordStoreException;
 import javax.microedition.rms.RecordStoreNotOpenException;
+import wakeonlan.display.ListComputers;
 
 /**
  * Computers.
@@ -17,7 +17,7 @@ public class Computers {
 
 	private WakeOnLan wakeOnLan = null;
 
-	private List list = null;
+	private ListComputers list = null;
 
 	private RecordStore records = null;
 
@@ -25,14 +25,14 @@ public class Computers {
 
 	private int count = 0;
 
-	public Computers(WakeOnLan wakeOnLan, List list) {
+	public Computers(WakeOnLan wakeOnLan, ListComputers list) {
 		this.wakeOnLan = wakeOnLan;
 		this.list = list;
 
 		computers = new Vector();
 	}
 
-	public void loadComputers() throws RecordStoreNotOpenException, RecordStoreException {
+	public void load() throws RecordStoreNotOpenException, RecordStoreException {
 		if(records.getNumRecords() > 0) {
 			for(int i = 0; i < (records.getNumRecords() / RECORD_PROPERTIES); i++) {
 				int index = i * RECORD_PROPERTIES;
@@ -67,20 +67,57 @@ public class Computers {
 				count++;
 			}
 
-			sortComputers();
+			sort();
 
-			for (int i = 0; i < computers.size(); i++) {
-				Computer computer = (Computer) computers.elementAt(i);
-				if (computer.getName().equals("")) {
-					break;
-				}
-
-				list.append(computer.getName(), null);
-			}
+			updateList();
 		}
 	}
 
-	public String saveComputer(String name, String ip, String mac, String port, int computer) {
+	private void updateList() {
+		list.deleteAll();
+		list.reinitialize();
+
+		for (int i = 0; i < computers.size(); i++) {
+			Computer computer = (Computer) computers.elementAt(i);
+			if (computer.getName().equals("")) {
+				break;
+			}
+
+			list.append(computer.getName(), null);
+		}
+	}
+
+	public boolean addComputer(String name, String ip, String mac, int port) throws Exception {
+		check(wakeOnLan, name, ip, mac, port);
+
+		try {
+			byte[] bName = name.getBytes();
+			int index = records.addRecord(bName, 0, bName.length);
+
+			byte[] bIp = ip.getBytes();
+			records.addRecord(bIp, 0, bIp.length);
+
+			byte[] bMac = mac.getBytes();
+			records.addRecord(bMac, 0, bMac.length);
+
+			byte[] bPort = String.valueOf(port).getBytes();
+			records.addRecord(bPort, 0, bPort.length);
+
+			computers.addElement(new Computer(index % RECORD_PROPERTIES, name, ip, mac, port));
+
+			sort();
+
+			updateList();
+		} catch(Exception e) {
+			System.err.print(e);
+
+			return false;
+		}
+
+		return true;
+	}
+
+	public String modify(int listIndex, String name, String ip, String mac, String port) {
 		//if(name.compareTo("") == 0)
 		//	return midlet.Texts.BLANK_NAME;
 		//else if(ip.compareTo("") == 0)
@@ -93,7 +130,7 @@ public class Computers {
 		try {
 			byte[] byteSettingsValue;
 
-			if(computer == -1) {
+			if(listIndex == -1) {
 				int newDBIndex = 0;
 
 				byteSettingsValue = name.getBytes();
@@ -142,7 +179,7 @@ public class Computers {
 		return "";
 	}
 
-	public void removeComputer(int computer) {
+	public void remove(int listIndex) {
 		try {
 			//int dbIndex = ((Integer) settDBIndex.elementAt(computer)).intValue();
 
@@ -163,7 +200,7 @@ public class Computers {
 	/**
 	 * Sort computers alphabetically.
 	 */
-	private void sortComputers() {
+	private void sort() {
 		for (int i = 0; i < computers.size() - 1; i++) {
 			for (int x = i; x < computers.size() - 1; x++) {
 				Computer computer1 = (Computer) computers.elementAt(x);
@@ -272,4 +309,34 @@ public class Computers {
 			return name.compareTo(computer.getName());
 		}
 	}
+
+	/**
+	 * Check computer params.
+	 *
+	 * @param name
+	 * @param ip
+	 * @param mac
+	 * @param port
+	 * @throws Exception
+	 */
+	public static void check(WakeOnLan wakeOnLan, String name, String ip, String mac, int port) throws Exception {
+		if (ip.equals("")) {
+			throw new Exception(wakeOnLan.translate("Musíte zadat IP adresu počítače."));
+		}
+
+		if (name.equals("")) {
+			throw new Exception(wakeOnLan.translate("Musíte zadat název počítače."));
+		}
+
+		if (mac.equals("")) {
+			throw new Exception(wakeOnLan.translate("Musíte zadat MAC adresu počítače."));
+		} else if ((mac.indexOf(":") < 0) && (mac.indexOf("-") < 0)) {
+			throw new Exception(wakeOnLan.translate("MAC adresu musí mít jako oddělovač \":\" nebo \"-\"."));
+		}
+
+		if (port <= 0) {
+			throw new Exception(wakeOnLan.translate("Port počítače musí být větší než 0."));
+		}
+	}
+
 }
