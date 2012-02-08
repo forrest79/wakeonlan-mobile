@@ -1,10 +1,11 @@
 package wakeonlan.display;
 
 import javax.microedition.lcdui.*;
+import wakeonlan.Computer;
 import wakeonlan.WakeOnLan;
 
 /**
- * Form search.
+ * Form computer.
  *
  * @author Jakub Trmota | Forrest79
  */
@@ -80,7 +81,7 @@ public final class FormComputer extends Form implements CommandListener {
 	private Command cmdExit = null;
 
 	/**
-	 * Form search initialization.
+	 * Form computer initialization.
 	 *
 	 * @param wakeOnLan
 	 */
@@ -99,7 +100,7 @@ public final class FormComputer extends Form implements CommandListener {
 		txtName = new TextField(wakeOnLan.translate("Název počítače") + ":", "", 20, TextField.ANY);
 		txtIp = new TextField(wakeOnLan.translate("IP adresa") + ":", "", 20, TextField.ANY);
 		txtMac = new TextField(wakeOnLan.translate("MAC adresa") + ":", "", 20, TextField.ANY);
-		strMacInfo = new StringItem("", wakeOnLan.translate("MAC: Info"));
+		strMacInfo = new StringItem("", wakeOnLan.translate("MAC: text"));
 		txtPort = new TextField(wakeOnLan.translate("Port") + ":", "", 4, TextField.NUMERIC);
 		cmdWake = new Command(wakeOnLan.translate("Probudit počítač"), Command.OK, 0);
 		cmdAdd = new Command(wakeOnLan.translate("Přidat počítač"), Command.OK, 0);
@@ -119,6 +120,11 @@ public final class FormComputer extends Form implements CommandListener {
 		removeCommand(cmdSave);
 		removeCommand(cmdBack);
 		removeCommand(cmdExit);
+
+		txtName.setString("");
+		txtIp.setString("");
+		txtMac.setString("");
+		txtPort.setString("");
 
 		initialize();
 	}
@@ -173,6 +179,18 @@ public final class FormComputer extends Form implements CommandListener {
 	}
 
 	/**
+	 * Set defaults to form.
+	 *
+	 * @param computer
+	 */
+	public void setDefaults(Computer computer) {
+		txtName.setString(computer.getName());
+		txtIp.setString(computer.getIp());
+		txtMac.setString(computer.getMac());
+		txtPort.setString(String.valueOf(computer.getPort()));
+	}
+
+	/**
 	 * Action listener.
 	 *
 	 * @param c
@@ -188,6 +206,7 @@ public final class FormComputer extends Form implements CommandListener {
 		} else if (c == cmdAdd) {
 			wakeOnLan.addComputer(txtName.getString(), txtIp.getString(), txtMac.getString(), txtPort.getString());
 		} else if (c == cmdSave) {
+			wakeOnLan.modifyComputer(txtName.getString(), txtIp.getString(), txtMac.getString(), txtPort.getString());
 		}
 	}
 }

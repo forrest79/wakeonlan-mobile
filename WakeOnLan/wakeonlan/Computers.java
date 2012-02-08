@@ -11,31 +11,58 @@ import wakeonlan.display.ListComputers;
  *
  * @author Jakub Trmota | Forrest79
  */
-public class Computers {
-
+public final class Computers {
+	/**
+	 * Number of record properties.
+	 */
 	private static final int RECORD_PROPERTIES = 4;
 
+	/**
+	 * WakeOnLan midlet.
+	 */
 	private WakeOnLan wakeOnLan = null;
 
+	/**
+	 * Computers list.
+	 */
 	private ListComputers list = null;
 
+	/**
+	 * Record store for computers.
+	 */
 	private RecordStore records = null;
 
+	/**
+	 * Computers array.
+	 */
 	public Vector computers = null;
 
-	private int count = 0;
-
-	public Computers(WakeOnLan wakeOnLan, ListComputers list) {
+	/**
+	 * Initialize computers.
+	 *
+	 * @param wakeOnLan
+	 * @param list
+	 * @throws RecordStoreException
+	 */
+	public Computers(WakeOnLan wakeOnLan, ListComputers list) throws RecordStoreException {
 		this.wakeOnLan = wakeOnLan;
 		this.list = list;
 
 		computers = new Vector();
+
+		openRecords();
 	}
 
+	/**
+	 * Load computers from record store.
+	 *
+	 * @throws RecordStoreNotOpenException
+	 * @throws RecordStoreException
+	 */
 	public void load() throws RecordStoreNotOpenException, RecordStoreException {
 		if(records.getNumRecords() > 0) {
-			for(int i = 0; i < (records.getNumRecords() / RECORD_PROPERTIES); i++) {
-				int index = i * RECORD_PROPERTIES;
+			for(int i = 1; i <= (records.getNumRecords() / RECORD_PROPERTIES); i++) {
+				int index = ((i - 1) * RECORD_PROPERTIES) + 1;
 
 				String name;
 				String ip;
@@ -48,23 +75,21 @@ public class Computers {
 					name = new String(bName);
 
 					byte[] bIp = new byte[records.getRecordSize(index + 1)];
-					records.getRecord((index + 1), bIp, 0);
+					records.getRecord(index + 1, bIp, 0);
 					ip = new String(bIp);
 
 					byte[] bMac = new byte[records.getRecordSize(index + 2)];
-					records.getRecord((index + 2), bMac, 0);
+					records.getRecord(index + 2, bMac, 0);
 					mac = new String(bMac);
 
 					byte[] bPort = new byte[records.getRecordSize(index + 3)];
-					records.getRecord((index + 3), bPort, 0);
+					records.getRecord(index + 3, bPort, 0);
 					port = Integer.parseInt(new String(bPort));
 
 					computers.addElement(new Computer(index, name, ip, mac, port));
 				} else {
 					computers.addElement(new Computer(index));
 				}
-
-				count++;
 			}
 
 			sort();
@@ -73,6 +98,9 @@ public class Computers {
 		}
 	}
 
+	/**
+	 * Update computers list.
+	 */
 	private void updateList() {
 		list.deleteAll();
 		list.reinitialize();
@@ -87,8 +115,34 @@ public class Computers {
 		}
 	}
 
-	public boolean addComputer(String name, String ip, String mac, int port) throws Exception {
+	/**
+	 * Get computer.
+	 *
+	 * @param listIndex
+	 * @return
+	 */
+	public Computer get(int listIndex) {
+		return (Computer) computers.elementAt(listIndex);
+	}
+
+	/**
+	 * Add computer.
+	 *
+	 * @param name
+	 * @param ip
+	 * @param mac
+	 * @param port
+	 * @return success
+	 * @throws Exception
+	 */
+	public boolean add(String name, String ip, String mac, int port) throws Exception {
 		check(wakeOnLan, name, ip, mac, port);
+
+		// Search for removed computer and modify it
+		int removed = searchRemoved();
+		if (removed > -1) {
+			return modify(removed, name, ip, mac, port);
+		}
 
 		try {
 			byte[] bName = name.getBytes();
@@ -103,7 +157,7 @@ public class Computers {
 			byte[] bPort = String.valueOf(port).getBytes();
 			records.addRecord(bPort, 0, bPort.length);
 
-			computers.addElement(new Computer(index % RECORD_PROPERTIES, name, ip, mac, port));
+			computers.addElement(new Computer(index, name, ip, mac, port));
 
 			sort();
 
@@ -117,84 +171,98 @@ public class Computers {
 		return true;
 	}
 
-	public String modify(int listIndex, String name, String ip, String mac, String port) {
-		//if(name.compareTo("") == 0)
-		//	return midlet.Texts.BLANK_NAME;
-		//else if(ip.compareTo("") == 0)
-		//	return midlet.Texts.BLANK_IP;
-		//else if(mac.compareTo("") == 0)
-		//	return midlet.Texts.BLANK_MAC;
-		//else if(port.compareTo("") == 0)
-		//	return midlet.Texts.BLANK_PORT;
+	/**
+	 * Modify computer.
+	 *
+	 * @param listIndex
+	 * @param name
+	 * @param ip
+	 * @param mac
+	 * @param port
+	 * @return success
+	 * @throws Exception
+	 */
+	public boolean modify(int listIndex, String name, String ip, String mac, int port) throws Exception {
+		check(wakeOnLan, name, ip, mac, port);
 
 		try {
-			byte[] byteSettingsValue;
+			Computer computer = (Computer) computers.elementAt(listIndex);
 
-			if(listIndex == -1) {
-				int newDBIndex = 0;
+			int index = computer.getRecordIndex();
 
-				byteSettingsValue = name.getBytes();
-				newDBIndex = records.addRecord(byteSettingsValue, 0, byteSettingsValue.length);
+			byte[] bName = name.getBytes();
+			records.setRecord(index, bName, 0, bName.length);
+			computer.setName(name);
 
-				byteSettingsValue = ip.getBytes();
-				records.addRecord(byteSettingsValue, 0, byteSettingsValue.length);
+			byte[] bIp = ip.getBytes();
+			records.setRecord(index + 1, bIp, 0, bIp.length);
+			computer.setIp(ip);
 
-				byteSettingsValue = mac.getBytes();
-				records.addRecord(byteSettingsValue, 0, byteSettingsValue.length);
+			byte[] bMac = mac.getBytes();
+			records.setRecord(index + 2, bMac, 0, bMac.length);
+			computer.setMac(mac);
 
-				byteSettingsValue = port.getBytes();
-				records.addRecord(byteSettingsValue, 0, byteSettingsValue.length);
+			byte[] bPort = String.valueOf(port).getBytes();
+			records.setRecord(index + 3, bPort, 0, bPort.length);
+			computer.setPort(port);
 
-				//settDBIndex.addElement(new Integer(newDBIndex));
-				//settName.addElement(name);
-				//settIP.addElement(ip);
-				//settMAC.addElement(mac);
-				//settPort.addElement(port);
-				//midlet.lstMain.append(name, null);
-			} else {
-				//int dbIndex = ((Integer) settDBIndex.elementAt(computer)).intValue();
+			computers.setElementAt(computer, listIndex);
 
-				//byteSettingsValue = name.getBytes();
-				//records.setRecord(dbIndex, byteSettingsValue, 0, byteSettingsValue.length);
+			sort();
 
-				//byteSettingsValue = ip.getBytes();
-				//records.setRecord((dbIndex + 1), byteSettingsValue, 0, byteSettingsValue.length);
-
-				//byteSettingsValue = mac.getBytes();
-				//records.setRecord((dbIndex + 2), byteSettingsValue, 0, byteSettingsValue.length);
-
-				//byteSettingsValue = port.getBytes();
-				//records.setRecord((dbIndex + 3), byteSettingsValue, 0, byteSettingsValue.length);
-
-				//settName.setElementAt(name, computer);
-				//settIP.setElementAt(ip, computer);
-				//settMAC.setElementAt(mac, computer);
-				//settPort.setElementAt(port, computer);
-				//midlet.lstMain.set((computer + 1), name, null);
-			}
+			updateList();
 		} catch(Exception e) {
-			//return midlet.Texts.SAVE_ERROR;
+			System.err.print(e);
+
+			return false;
 		}
 
-		return "";
+		return true;
 	}
 
-	public void remove(int listIndex) {
+	/**
+	 * Remove computer.
+	 *
+	 * @param listIndex
+	 * @return success
+	 */
+	public boolean remove(int listIndex) {
 		try {
-			//int dbIndex = ((Integer) settDBIndex.elementAt(computer)).intValue();
+			Computer computer = (Computer) computers.elementAt(listIndex);
+			computer.remove();
 
-			//records.setRecord(dbIndex, null, 0, 0);
-			//records.setRecord((dbIndex + 1), null, 0, 0);
-			//records.setRecord((dbIndex + 2), null, 0, 0);
-			//records.setRecord((dbIndex + 3), null, 0, 0);
+			int index = computer.getRecordIndex();
 
-			//settDBIndex.removeElementAt(computer);
-			//settName.removeElementAt(computer);
-			//settIP.removeElementAt(computer);
-			//settMAC.removeElementAt(computer);
-			//settPort.removeElementAt(computer);
-			//midlet.lstMain.delete(computer + 1);
-		} catch(Exception e) {}
+			records.setRecord(index, "".getBytes(), 0, 0);
+			records.setRecord(index + 1, "".getBytes(), 0, 0);
+			records.setRecord(index + 2, "".getBytes(), 0, 0);
+			records.setRecord(index + 3, "".getBytes(), 0, 0);
+
+			sort();
+
+			updateList();
+		} catch(Exception e) {
+			System.err.print(e);
+
+			return false;
+		}
+
+		return true;
+	}
+
+	/**
+	 * Search for removed computer and return index or -1
+	 *
+	 * @return index or -1
+	 */
+	private int searchRemoved() {
+		for (int i = 0; i < computers.size(); i++) {
+			if (((Computer) computers.elementAt(i)).getName().equals("")) {
+				return i;
+			}
+		}
+
+		return -1;
 	}
 
 	/**
@@ -205,7 +273,7 @@ public class Computers {
 			for (int x = i; x < computers.size() - 1; x++) {
 				Computer computer1 = (Computer) computers.elementAt(x);
 				Computer computer2 = (Computer) computers.elementAt(x + 1);
-				if(computer1.compareTo(computer2) < 0){
+				if(computer1.compareTo(computer2) > 0) {
 					computers.setElementAt(computer2, x);
 					computers.setElementAt(computer1, x + 1);
 				}
@@ -233,92 +301,14 @@ public class Computers {
 	}
 
 	/**
-   * Form search.
-	 *
-	 * @author Jakub Trmota | Forrest79
-	 */
-	private class Computer {
-
-		private int recordIndex = 0;
-
-		private String name = "";
-
-		private String ip = "";
-
-		private String mac = "";
-
-		private int port = 0;
-
-		public Computer(int recordIndex) {
-			this.recordIndex = recordIndex;
-		}
-
-		public Computer(int recordIndex, String name, String ip, String mac, int port) {
-			this.recordIndex = recordIndex;
-			this.name = name;
-			this.ip = ip;
-			this.mac = mac;
-			this.port = port;
-		}
-
-		public int getRecordIndex() {
-			return recordIndex;
-		}
-
-		public void setRecordIndex(int recordIndex) {
-			this.recordIndex = recordIndex;
-		}
-
-		public String getName() {
-			return name;
-		}
-
-		public void setName(String name) {
-			this.name = name;
-		}
-
-		public String getIp() {
-			return ip;
-		}
-
-		public void setIp(String ip) {
-			this.ip = ip;
-		}
-
-		public String getMac() {
-			return mac;
-		}
-
-		public void setMac(String mac) {
-			this.mac = mac;
-		}
-
-		public int getPort() {
-			return port;
-		}
-
-		public void setPort(int port) {
-			this.port = port;
-		}
-
-		public int compareTo(Computer computer) {
-			if (computer.getName().equals("")) {
-				return 1;
-			}
-
-			return name.compareTo(computer.getName());
-		}
-	}
-
-	/**
-	 * Check computer params.
-	 *
-	 * @param name
-	 * @param ip
-	 * @param mac
-	 * @param port
-	 * @throws Exception
-	 */
+		* Check computer params.
+		*
+		* @param name
+		* @param ip
+		* @param mac
+		* @param port
+		* @throws Exception
+		*/
 	public static void check(WakeOnLan wakeOnLan, String name, String ip, String mac, int port) throws Exception {
 		if (ip.equals("")) {
 			throw new Exception(wakeOnLan.translate("Musíte zadat IP adresu počítače."));
@@ -338,5 +328,4 @@ public class Computers {
 			throw new Exception(wakeOnLan.translate("Port počítače musí být větší než 0."));
 		}
 	}
-
 }

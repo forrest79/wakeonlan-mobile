@@ -4,7 +4,7 @@ import javax.microedition.lcdui.*;
 import wakeonlan.WakeOnLan;
 
 /**
- * Form search.
+ * List computers.
  *
  * @author Jakub Trmota | Forrest79
  */
@@ -93,7 +93,7 @@ public final class ListComputers extends List implements CommandListener {
 		addCommand(cmdAbout);
 		addCommand(cmdExit);
 
-		insert(0, wakeOnLan.translate("[Rychle probudit]"), null);
+		insert(0, "[" + wakeOnLan.translate("Rychle probudit") + "]", null);
 	}
 
 	/**
@@ -109,7 +109,9 @@ public final class ListComputers extends List implements CommandListener {
 		removeCommand(cmdAbout);
 		removeCommand(cmdExit);
 
-		delete(0);
+		if (size() > 0) {
+			delete(0);
+		}
 
 		initialize();
 	}
@@ -131,17 +133,17 @@ public final class ListComputers extends List implements CommandListener {
 			if (getSelectedIndex() == 0) {
 				wakeOnLan.showQuickWakeComputer();
 			} else if (getSelectedIndex() > 0) {
-				wakeOnLan.wakeComputer(getSelectedIndex());
+				wakeOnLan.wakeComputer(getSelectedIndex() - 1);
 			}
 		} else if (c == cmdAdd) {
 			wakeOnLan.showAddComputer();
 		} else if (c == cmdModify) {
 			if (getSelectedIndex() > 0) {
-				wakeOnLan.showModifyComputer(getSelectedIndex());
+				wakeOnLan.showModifyComputer(getSelectedIndex() - 1);
 			}
 		} else if (c == cmdRemove) {
 			if (getSelectedIndex() > 0) {
-				wakeOnLan.showRemoveComputer(getSelectedIndex());
+				wakeOnLan.showRemoveComputer(getSelectedIndex() - 1);
 			}
 		} else if (c == cmdSetPassword) {
 			wakeOnLan.showSetPassword();

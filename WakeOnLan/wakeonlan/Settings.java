@@ -47,7 +47,7 @@ public final class Settings {
 	private boolean firstRun = false;
 
 	/**
-	 * Initialize locale class and load locale id.
+	 * Initialize settings.
 	 *
 	 * @param wakeOnLan
 	 * @throws RecordStoreException
@@ -77,8 +77,8 @@ public final class Settings {
 
 		localeId = new String(byteLocaleId);
 
-		byte[] bytePassword = new byte[records.getRecordSize(LANG_RECORD_ID)];
-		records.getRecord(LANG_RECORD_ID, bytePassword, 0);
+		byte[] bytePassword = new byte[records.getRecordSize(PASSWORD_RECORD_ID)];
+		records.getRecord(PASSWORD_RECORD_ID, bytePassword, 0);
 
 		password = new String(bytePassword);
 	}
@@ -116,20 +116,18 @@ public final class Settings {
 	 * @param password
 	 * @return true if locale is changed
 	 */
-	public boolean setPassword(String password1, String password2) throws Exception, RecordStoreException {
+	public void setPassword(String password1, String password2) throws Exception, RecordStoreException {
 		if (!password1.equals(password2)) {
 			throw new Exception(wakeOnLan.translate("Hesla se musí shodovat."));
 		}
 
-		if (this.password.equals(password)) {
-			return false;
+		if (this.password.equals(password1)) {
+			return;
 		}
 
 		this.password = password1;
 
 		records.setRecord(PASSWORD_RECORD_ID, this.password.getBytes(), 0, this.password.getBytes().length);
-
-		return true;
 	}
 
 	/**
@@ -146,7 +144,7 @@ public final class Settings {
 	 *
 	 * @return
 	 */
-	public boolean firstRun() {
+	public boolean isFirstRun() {
 		return firstRun;
 	}
 

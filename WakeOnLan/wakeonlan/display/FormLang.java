@@ -82,9 +82,9 @@ public final class FormLang extends Form implements CommandListener {
 	public void commandAction(Command c, Displayable d) {
 		if (c == cmdSave) {
 			wakeOnLan.setLocale(getLangChoice());
-			wakeOnLan.back();
+			wakeOnLan.showComputers();
 		} else if (c == cmdBack) {
-			wakeOnLan.back();
+			wakeOnLan.showComputers();
 		}
 	}
 

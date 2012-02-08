@@ -4,7 +4,7 @@ import javax.microedition.lcdui.*;
 import wakeonlan.WakeOnLan;
 
 /**
- * Form search.
+ * Form set password.
  *
  * @author Jakub Trmota | Forrest79
  */
@@ -40,7 +40,7 @@ public final class FormSetPassword extends Form implements CommandListener {
 	private Command cmdBack = null;
 
 	/**
-	 * Form search initialization.
+	 * Form set password initialization.
 	 *
 	 * @param wakeOnLan
 	 */
@@ -85,6 +85,14 @@ public final class FormSetPassword extends Form implements CommandListener {
 	}
 
 	/**
+	 * Clear form.
+	 */
+	public void clear() {
+		txtPassword1.setString("");
+		txtPassword2.setString("");
+	}
+
+	/**
 	 * Action listener.
 	 *
 	 * @param c
@@ -92,14 +100,9 @@ public final class FormSetPassword extends Form implements CommandListener {
 	 */
 	public void commandAction(Command c, Displayable d) {
 		if (c == cmdSave) {
-			try {
-				wakeOnLan.setPassword(txtPassword1.getString(), txtPassword2.getString());
-				wakeOnLan.back();
-			} catch (Exception e) {
-				wakeOnLan.alert(wakeOnLan.translate("Nastavit heslo"), e.getMessage(), AlertType.WARNING);
-			}
+			wakeOnLan.setPassword(txtPassword1.getString(), txtPassword2.getString());
 		} else if (c == cmdBack) {
-			wakeOnLan.back();
+			wakeOnLan.showComputers();
 		}
 	}
 }

@@ -69,7 +69,7 @@ public final class FormAbout extends Form implements CommandListener {
 	 */
 	public void commandAction(Command c, Displayable d) {
 		if (c == cmdBack) {
-			wakeOnLan.back();
+			wakeOnLan.showComputers();
 		}
 	}
 }

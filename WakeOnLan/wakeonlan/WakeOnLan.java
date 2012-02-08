@@ -6,7 +6,7 @@ import javax.microedition.rms.RecordStoreException;
 import wakeonlan.display.*;
 import wakeonlan.locale.Locale;
 
-public class WakeOnLan extends MIDlet {
+public final class WakeOnLan extends MIDlet {
 	/**
 	 * Application version.
 	 */
@@ -98,6 +98,11 @@ public class WakeOnLan extends MIDlet {
 	private boolean run = false;
 
 	/**
+	 * Selected computer index on computers list or -1
+	 */
+	private int selectedComputer = -1;
+
+	/**
 	 * Start midlet and initilize.
 	 */
 	public void startApp() {
@@ -124,14 +129,15 @@ public class WakeOnLan extends MIDlet {
 				formAbout = new FormAbout(this);
 
 				computers = new Computers(this, listComputers);
+				computers.load();
 				wakeComputer = new WakeComputer(this, canvasResult);
 
 				run = true;
 
-				if (settings.getPassword().equals("")) {
+				if (!settings.getPassword().equals("")) {
 					show(formCheckPassword);
 				} else {
-					if (settings.firstRun()) {
+					if (settings.isFirstRun()) {
 						show(formLang);
 					} else {
 						show(listComputers);
@@ -178,116 +184,13 @@ public class WakeOnLan extends MIDlet {
 		notifyDestroyed();
 	}
 
-	/*
-	// List main
-	if(c == lstMain_cmdWakeOn) {
-		canResult.addCommand(canResult_cmdStop);
-		canResult.removeCommand(canResult_cmdOk);
-
-		if(lstMain.getSelectedIndex() == 0) {
-			frmQuick.setCommandListener(this);
-			display.setCurrent(frmQuick);
-		} else {
-			canResult.setCommandListener(this);
-			display.setCurrent(canResult);
-
-			try {
-				int selectedIndex = (lstMain.getSelectedIndex() - 1);
-
-				wakeComputer = new WakeComputer(this, canResult, String.valueOf(computers.settName.elementAt(selectedIndex)), String.valueOf(computers.settIP.elementAt(selectedIndex)), String.valueOf(computers.settMAC.elementAt(selectedIndex)), String.valueOf(computers.settPort.elementAt(selectedIndex)));
-				Thread threadWakeOn = new Thread(wakeComputer);
-				threadWakeOn.start();
-			} catch(Exception e) {}
-		}
-	} else if(c == lstMain_cmdAdd) {
-		frmAdd_txtName.setString("");
-		frmAdd_txtIP.setString("");
-		frmAdd_txtMAC.setString("");
-		frmAdd_txtPort.setString("");
-
-		frmAdd.setCommandListener(this);
-		display.setCurrent(frmAdd);
-	} else if(c == lstMain_cmdModify) {
-		if(lstMain.getSelectedIndex() == 0) {
-			alert = new Alert(Texts.WAKEON_COMPUTER, Texts.SELECT_COMPUTER, null, AlertType.INFO);
-			alert.setTimeout(2000);
-			display.setCurrent(alert, lstMain);
-		} else {
-			int selectedIndex = (lstMain.getSelectedIndex() - 1);
-
-			frmModify_txtName.setString(String.valueOf(computers.settName.elementAt(selectedIndex)));
-			frmModify_txtIP.setString(String.valueOf(computers.settIP.elementAt(selectedIndex)));
-			frmModify_txtMAC.setString(String.valueOf(computers.settMAC.elementAt(selectedIndex)));
-			frmModify_txtPort.setString(String.valueOf(computers.settPort.elementAt(selectedIndex)));
-
-			frmModify.setCommandListener(this);
-			display.setCurrent(frmModify);
-		}
-	} else if(c == lstMain_cmdRemove) {
-		if(lstMain.getSelectedIndex() == 0) {
-			alert = new Alert(Texts.WAKEON_COMPUTER, Texts.SELECT_COMPUTER, null, AlertType.INFO);
-			alert.setTimeout(2000);
-			display.setCurrent(alert, lstMain);
-		} else {
-			frmRemove_strInfo.setText(Texts.REALY_REMOVE_COMPUTER + " " + String.valueOf(computers.settName.elementAt(lstMain.getSelectedIndex() - 1)) + "?");
-
-			frmRemove.setCommandListener(this);
-			display.setCurrent(frmRemove);
-		}
-	}
-
-	// Form add
-	if(c == frmAdd_cmdSave) {
-		String strComputer = computers.saveComputer(frmAdd_txtName.getString(), frmAdd_txtIP.getString(), frmAdd_txtMAC.getString(), frmAdd_txtPort.getString(), -1);
-
-		if(strComputer.compareTo("") == 0) {
-			lstMain.setCommandListener(this);
-			display.setCurrent(lstMain);
-		} else {
-			alert = new Alert(Texts.ADD_COMPUTER, strComputer, null, AlertType.ERROR);
-			alert.setTimeout(Alert.FOREVER);
-			display.setCurrent(alert, frmAdd);
-		}
-	} else if(c == frmAdd_cmdBack) {
-		lstMain.setCommandListener(this);
-		display.setCurrent(lstMain);
-	}
-
-	// Form modify
-	if(c == frmModify_cmdSave) {
-		String strComputer = computers.saveComputer(frmModify_txtName.getString(), frmModify_txtIP.getString(), frmModify_txtMAC.getString(), frmModify_txtPort.getString(), (lstMain.getSelectedIndex() - 1));
-
-		if(strComputer.compareTo("") == 0) {
-			lstMain.setCommandListener(this);
-			display.setCurrent(lstMain);
-		} else {
-			alert = new Alert(Texts.MODIFY_COMPUTER, strComputer, null, AlertType.ERROR);
-			alert.setTimeout(Alert.FOREVER);
-			display.setCurrent(alert, frmModify);
-		}
-	} else if(c == frmModify_cmdBack) {
-		lstMain.setCommandListener(this);
-		display.setCurrent(lstMain);
-	}
-
-	// Form remove
-	if(c == frmRemove_cmdYes) {
-		computers.removeComputer(lstMain.getSelectedIndex() - 1);
-		lstMain.setCommandListener(this);
-		display.setCurrent(lstMain);
-	} else if(c == frmRemove_cmdNo) {
-		lstMain.setCommandListener(this);
-		display.setCurrent(lstMain);
-	}
-	*/
-
 	/**
 	 * Show form or canvas.
 	 *
 	 * @param displayable
 	 */
 	private void show(Displayable displayable) {
-		if (displayable == listComputers || displayable == canvasResult || displayable == formComputer) {
+		if (displayable == listComputers || displayable == formComputer || displayable == formCheckPassword) {
 			back = displayable;
 		}
 
@@ -319,8 +222,15 @@ public class WakeOnLan extends MIDlet {
 		display.setCurrent(alert, back == null ? listComputers : back);
 	}
 
-
-	public void wakeComputer(String name, String ip, String mac, String port) {
+	/**
+	 * Wake computer.
+	 *
+	 * @param name
+	 * @param ip
+	 * @param mac
+	 * @param port
+	 */
+	private void wakeComputer(String name, String ip, String mac, String port) {
 		try {
 			int iPort = Integer.parseInt(port);
 
@@ -333,19 +243,40 @@ public class WakeOnLan extends MIDlet {
 		}
 	}
 
+	/**
+	 * Quick wake computer.
+	 *
+	 * @param ip
+	 * @param mac
+	 * @param port
+	 */
 	public void wakeComputer(String ip, String mac, String port) {
 		wakeComputer(ip, ip, mac, port);
 	}
 
+	/**
+	 * Wake computer with index.
+	 *
+	 * @param computerIndex
+	 */
 	public void wakeComputer(int computerIndex) {
-		wakeComputer("", "", "", "");
+		Computer computer = computers.get(computerIndex);
+		wakeComputer(computer.getName(), computer.getIp(), computer.getMac(), String.valueOf(computer.getPort()));
 	}
 
+	/**
+	 * Add computer.
+	 *
+	 * @param name
+	 * @param ip
+	 * @param mac
+	 * @param port
+	 */
 	public void addComputer(String name, String ip, String mac, String port) {
 		try {
 			int iPort = Integer.parseInt(port);
 
-			if (computers.addComputer(name, ip, mac, iPort)) {
+			if (computers.add(name, ip, mac, iPort)) {
 				showComputers();
 			} else {
 				throw new Exception(translate("Nastala chyba při přidávání počítače."));
@@ -358,14 +289,70 @@ public class WakeOnLan extends MIDlet {
 	}
 
 	/**
+	 * Modify computer.
+	 *
+	 * @param name
+	 * @param ip
+	 * @param mac
+	 * @param port
+	 */
+	public void modifyComputer(String name, String ip, String mac, String port) {
+		try {
+			if (selectedComputer == -1) {
+				throw new Exception(translate("Není vybrán počítač pro úpravu."));
+			}
+
+			int iPort = Integer.parseInt(port);
+
+			if (computers.modify(selectedComputer, name, ip, mac, iPort)) {
+				showComputers();
+			} else {
+				throw new Exception(translate("Nastala chyba při upravování počítače."));
+			}
+		} catch (NumberFormatException e) {
+			alert(translate("Chyba"), translate("Port musí být číslo."), AlertType.ERROR);
+		} catch (Exception e) {
+			alert(translate("Chyba"), e.getMessage(), AlertType.ERROR);
+		} finally {
+			selectedComputer = -1;
+		}
+	}
+
+	/**
+	 * Remove computer.
+	 */
+	public void removeComputer() {
+		try {
+			if (selectedComputer == -1) {
+				throw new Exception(translate("Není vybrán počítač pro vymazání."));
+			}
+
+			if (computers.remove(selectedComputer)) {
+				showComputers();
+			} else {
+				throw new Exception(translate("Nastala chyba při vymazávání počítače."));
+			}
+		} catch (Exception e) {
+			alert(translate("Chyba"), e.getMessage(), AlertType.ERROR);
+		} finally {
+			selectedComputer = -1;
+		}
+	}
+
+	/**
 	 * Set password and save to settings.
 	 *
 	 * @param password1
 	 * @param password2
 	 * @throws Exception
 	 */
-	public void setPassword(String password1, String password2) throws Exception {
-		settings.setPassword(password1, password2);
+	public void setPassword(String password1, String password2) {
+		try {
+			settings.setPassword(password1, password2);
+			showComputers();
+		} catch (Exception e) {
+			alert(translate("Nastavit heslo"), e.getMessage(), AlertType.WARNING);
+		}
 	}
 
 	/**
@@ -432,8 +419,11 @@ public class WakeOnLan extends MIDlet {
 	 * Show modify computer.
 	 */
 	public void showModifyComputer(int listIndex) {
+		selectedComputer = listIndex;
+
 		try {
 			formComputer.action(FormComputer.COMPUTER_MODIFY);
+			formComputer.setDefaults(computers.get(selectedComputer));
 			show(formComputer);
 		} catch (Exception e) {
 			alert(translate("Chyba"), e.getMessage(), AlertType.ERROR);
@@ -444,6 +434,8 @@ public class WakeOnLan extends MIDlet {
 	 * Show remove computer.
 	 */
 	public void showRemoveComputer(int listIndex) {
+		selectedComputer = listIndex;
+
 		show(alertRemoveComputer);
 	}
 
@@ -458,6 +450,7 @@ public class WakeOnLan extends MIDlet {
 	 * Show set password form.
 	 */
 	public void showSetPassword() {
+		formSetPassword.clear();
 		show(formSetPassword);
 	}
 

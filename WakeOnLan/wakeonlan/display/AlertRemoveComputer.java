@@ -7,7 +7,7 @@ import javax.microedition.lcdui.Displayable;
 import wakeonlan.WakeOnLan;
 
 /**
- * Form about dictionary.
+ * Alert remove computer.
  *
  * @author Jakub Trmota | Forrest79
  */
@@ -28,7 +28,7 @@ public final class AlertRemoveComputer extends Alert implements CommandListener 
 	private Command cmdNo = null;
 
 	/**
-	 * Initialization form about.
+	 * Initialization alert remove computer.
 	 *
 	 * @param wakeOnLan
 	 */
@@ -72,7 +72,7 @@ public final class AlertRemoveComputer extends Alert implements CommandListener 
 	 */
 	public void commandAction(Command c, Displayable d) {
 		if (c == cmdYes) {
-			//wakeOnLan.back();
+			wakeOnLan.removeComputer();
 		} else {
 			wakeOnLan.showComputers();
 		}

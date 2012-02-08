@@ -136,7 +136,7 @@ public class CanvasResult extends Canvas implements CommandListener {
 
 		if(status == STATUS_DONE) {
 			g.setColor(255, 255, 255);
-			g.drawString(wakeOnLan.translate("Požadavek odeslán!"), getWidth() / 2, 55, Graphics.HCENTER | Graphics.TOP);
+			g.drawString(wakeOnLan.translate("Požadavek odeslán") + "!", getWidth() / 2, 55, Graphics.HCENTER | Graphics.TOP);
 		} else if(status == STATUS_ERROR) {
 			g.setColor(200, 200, 200);
 			g.drawString(wakeOnLan.translate("Chyba") + ": " + this.error + ".", getWidth() / 2, 55, Graphics.HCENTER | Graphics.TOP);

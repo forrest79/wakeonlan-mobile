@@ -4,7 +4,7 @@ import javax.microedition.lcdui.*;
 import wakeonlan.WakeOnLan;
 
 /**
- * Form search.
+ * Form check password.
  *
  * @author Jakub Trmota | Forrest79
  */

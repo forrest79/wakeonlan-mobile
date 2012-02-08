@@ -8,7 +8,7 @@ import javax.microedition.lcdui.Graphics;
 import javax.microedition.lcdui.Image;
 
 /**
- * Sending animation.
+ * Working animation.
  *
  * @author Jakub Trmota | Forrest79
  */
@@ -58,6 +58,9 @@ public final class Working {
 	 */
 	private int frame = 0;
 
+	/**
+	 * Animation thread.
+	 */
 	private Animation animation = null;
 
 	/**
@@ -132,7 +135,13 @@ public final class Working {
 		g.drawImage(working[frame], x, y, Graphics.LEFT | Graphics.TOP);
 	}
 
+	/**
+	 * Animation thread class.
+	 */
 	private final class Animation extends TimerTask {
+		/**
+		 * Main thread function.
+		 */
 		public void run() {
 			canvas.repaint();
 			frame++;

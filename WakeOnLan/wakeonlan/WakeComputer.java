@@ -130,7 +130,7 @@ public final class WakeComputer {
 			mac = mac + separator;
 			for (int x = 0; x < 6; x++) {
 				if (mac.indexOf(separator) < 0) {
-					result.error("špatná MAC adresa");
+					result.error(wakeOnLan.translate("špatná MAC adresa"));
 					return;
 				}
 
@@ -140,13 +140,13 @@ public final class WakeComputer {
 					if(partMac.length() > 0) {
 						decMac[x] = (byte) Integer.parseInt(partMac, 16);
 					} else {
-						result.error("špatná MAC adresa");
+						result.error(wakeOnLan.translate("špatná MAC adresa"));
 						return;
 					}
 				} catch(NumberFormatException e) {
 					System.err.print(e);
 
-					result.error("špatná MAC adresa");
+					result.error(wakeOnLan.translate("špatná MAC adresa"));
 					return;
 				}
 
@@ -167,7 +167,7 @@ public final class WakeComputer {
 				datagramConnection.send(sendMagicPacket);
 			} catch(Exception e) {
 				System.err.print(e);
-				result.error("příkaz neodeslán");
+				result.error(wakeOnLan.translate("příkaz neodeslán"));
 			} finally {
 				try {
 					if(datagramConnection != null) {
@@ -175,7 +175,7 @@ public final class WakeComputer {
 					}
 				} catch (Exception e) {
 					System.err.print(e);
-					result.error("příkaz neodeslán");
+					result.error(wakeOnLan.translate("příkaz neodeslán"));
 				}
 
 				// DONE :-)
