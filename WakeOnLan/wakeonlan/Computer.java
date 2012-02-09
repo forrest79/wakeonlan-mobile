@@ -150,13 +150,15 @@ public final class Computer {
 
 	/**
 	 * Compare with another Computer, "" move always to end.
-	 * 
+	 *
 	 * @param computer
 	 * @return
 	 */
 	public int compareTo(Computer computer) {
 		if (name.equals("")) {
 			return 1;
+		} else if (computer.getName().equals("")) {
+			return -1;
 		}
 
 		return name.compareTo(computer.getName());
