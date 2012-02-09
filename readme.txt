@@ -1,5 +1,9 @@
 WakeOnLan - Mobile © Jakub Trmota, 2012 (http://forrest79.net)
 
+
+Lets start the computers using Wake on LAN technology from your mobile supports Java (J2ME).
+
+
 LICENSE
 =======
 WakeOnLan - Mobile is distributed under GPL license. See license.txt.
