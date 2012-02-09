@@ -43,7 +43,7 @@ public final class LocaleEn extends BaseLocale {
 		locales.put("Nastavit heslo", "Set password");
 		locales.put("Heslo znovu", "Password again");
 		locales.put("O WakeOnLan", "About WakeOnLan");
-		locales.put("Probouzím počítač", "Wakeing up computer");
+		locales.put("Probouzím počítač", "Waking up computer");
 		locales.put("Požadavek odeslán", "Request was sent");
 
 		locales.put("Nechce prázdné pro deaktivování ochrany heslem.", "Leave blank for deactivate password protection.");
