@@ -6,12 +6,7 @@ Lets start the computers using Wake on LAN technology from your mobile supports 
 
 LICENSE
 =======
-WakeOnLan - Mobile is distributed under GPL license. See license.txt.
-
-
-INTRODUCTION
-============
-The files in this archive are released under the BSD license (license.txt).
+WakeOnLan - Mobile is distributed under BSD license. See license.txt.
 
 
 REQUIREMENTS
